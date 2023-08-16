@@ -14,7 +14,7 @@ import java.awt.*;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 
-public class MainFrame extends JFrame{
+public class MainFrame extends JFrame implements AutoCloseable{
 
 	private static final long serialVersionUID = 7419600803861028585L;
 
@@ -110,8 +110,7 @@ public class MainFrame extends JFrame{
     }
 
     @Override
-    protected void finalize() throws Throwable {
-        super.finalize();
+    public void close() {
         GuavaMgr.getInstance().getEventBus().unregister(this);
     }
 }
