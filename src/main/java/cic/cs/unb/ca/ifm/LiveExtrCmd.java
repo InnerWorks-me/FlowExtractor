@@ -77,15 +77,12 @@ public class LiveExtrCmd {
 
     static class LiveFlowExtractor {
         private TrafficFlowWorker mWorker;
-        private String path;
+        private String path = "saved-flows";
         private ExecutorService csvWriterThread;
         public boolean running;
 
         public LiveFlowExtractor() {
             init();
-            // Your initialization logic here.
-            this.path = FlowMgr.getInstance().getAutoSaveFile();
-            System.out.println(path);
         }
 
         private void init() {
@@ -105,14 +102,13 @@ public class LiveExtrCmd {
             mWorker = new TrafficFlowWorker(ifName);
             mWorker.addPropertyChangeListener(event -> {
                 TrafficFlowWorker task = (TrafficFlowWorker)event.getSource();
-                
+                System.out.println(event.getPropertyName());
                 if ("progress".equals(event.getPropertyName())) {
                     System.out.println((String)event.getNewValue());
-                } else if ("flow".equalsIgnoreCase(event.getPropertyName())) {
+                } else if (TrafficFlowWorker.PROPERTY_FLOW.equalsIgnoreCase(event.getPropertyName())) {
                     System.out.println("inserting flow");
                     insertFlow((BasicFlow)event.getNewValue());
                 } else if ("state".equals(event.getPropertyName())) {
-                    System.out.println(task);
                     switch (task.getState()) {
                         case DONE:
                             try {
@@ -147,9 +143,8 @@ public class LiveExtrCmd {
             flowStringList.add(flowDump);
             
             String header = FlowFeature.getHeader();
-            String path = FlowMgr.getInstance().getSavePath();
             String filename = LocalDate.now().toString() + "_Flow.csv"; //ODO sub with ip here
-            this.csvWriterThread.execute((Runnable)new InsertCsvRow(header, flowStringList, path, filename));
+            this.csvWriterThread.execute((Runnable)new InsertCsvRow(header, flowStringList, this.path, filename));
         }
     }
 
